@@ -12,6 +12,7 @@ import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping("/api/roles")
+@CrossOrigin(origins = "http://localhost:5173")
 public class RolController {
 
     private final RolService rolService;

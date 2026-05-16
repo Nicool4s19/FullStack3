@@ -12,6 +12,7 @@ import reactor.core.scheduler.Schedulers;
 
 @RestController
 @RequestMapping("/api/direcciones")
+@CrossOrigin(origins = "http://localhost:5173")
 public class DireccionController {
 
     private final DireccionService direccionService;
