@@ -33,31 +33,41 @@ public class UsuarioService {
     this.direccionRepository = direccionRepository;
     this.jwtService = jwtService;
 }
-
     public Usuario crear(CrearUsuarioRequest request) {
-        Rol rol = rolRepository.findById(request.getIdRol())
+
+    Rol rol;
+
+    if (request.getIdRol() == null) {
+        rol = rolRepository.findById(2L)
+                .orElseThrow(() -> new RuntimeException("Rol USUARIO no encontrado"));
+    } else {
+        rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
-
-        Direccion direccion = direccionRepository.findById(request.getIdDireccion())
-                .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
-
-        Usuario usuario = Usuario.builder()
-                .nombre(request.getNombre())
-                .segundoNombre(request.getSegundoNombre())
-                .apellido(request.getApellido())
-                .segundoApellido(request.getSegundoApellido())
-                .rut(request.getRut())
-                .email(request.getEmail())
-                .telefono(request.getTelefono())
-                .password(request.getPassword())
-                .activo(true)
-                .rol(rol)
-                .direccion(direccion)
-                .build();
-
-        return usuarioRepository.save(usuario);
     }
 
+    Direccion direccion = null;
+
+    if (request.getIdDireccion() != null) {
+        direccion = direccionRepository.findById(request.getIdDireccion())
+                .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
+    }
+
+    Usuario usuario = Usuario.builder()
+            .nombre(request.getNombre())
+            .segundoNombre(request.getSegundoNombre())
+            .apellido(request.getApellido())
+            .segundoApellido(request.getSegundoApellido())
+            .rut(request.getRut())
+            .email(request.getEmail())
+            .telefono(request.getTelefono())
+            .password(request.getPassword())
+            .activo(true)
+            .rol(rol)
+            .direccion(direccion)
+            .build();
+
+    return usuarioRepository.save(usuario);
+}
     public List<Usuario> listar() {
         return usuarioRepository.findAll();
     }
