@@ -73,8 +73,14 @@ public class UsuarioService {
         Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        Direccion direccion = direccionRepository.findById(request.getIdDireccion())
-                .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
+        Long idDireccion = request.getIdDireccion();
+
+if (idDireccion == null) {
+    idDireccion = 1L;
+}
+
+Direccion direccion = direccionRepository.findById(idDireccion)
+        .orElseThrow(() -> new RuntimeException("Dirección no encontrada"));
 
         usuario.setNombre(request.getNombre());
         usuario.setSegundoNombre(request.getSegundoNombre());
