@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.models.responses.LoginResponse;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -60,10 +61,10 @@ public class UsuarioController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<Usuario>> login(@Valid @RequestBody LoginRequest request) {
-        return Mono.fromCallable(() -> usuarioService.login(request))
-                .subscribeOn(Schedulers.boundedElastic())
-                .map(ResponseEntity::ok);
-    }
+public Mono<ResponseEntity<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
 
+    return Mono.fromCallable(() -> usuarioService.login(request))
+            .subscribeOn(Schedulers.boundedElastic())
+            .map(ResponseEntity::ok);
+}
 }

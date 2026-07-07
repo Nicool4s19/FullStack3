@@ -9,6 +9,8 @@ import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.repositories.Direccion
 import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.repositories.RolRepository;
 import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.repositories.UsuarioRepository;
 import org.springframework.stereotype.Service;
+import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.models.responses.LoginResponse;
+import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.security.JwtService;
 
 import java.util.List;
 
@@ -18,16 +20,19 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final DireccionRepository direccionRepository;
+    private final JwtService jwtService;
 
     public UsuarioService(
-            UsuarioRepository usuarioRepository,
-            RolRepository rolRepository,
-            DireccionRepository direccionRepository
-    ) {
-        this.usuarioRepository = usuarioRepository;
-        this.rolRepository = rolRepository;
-        this.direccionRepository = direccionRepository;
-    }
+        UsuarioRepository usuarioRepository,
+        RolRepository rolRepository,
+        DireccionRepository direccionRepository,
+        JwtService jwtService
+) {
+    this.usuarioRepository = usuarioRepository;
+    this.rolRepository = rolRepository;
+    this.direccionRepository = direccionRepository;
+    this.jwtService = jwtService;
+}
 
     public Usuario crear(CrearUsuarioRequest request) {
         Rol rol = rolRepository.findById(request.getIdRol())
@@ -90,14 +95,21 @@ public class UsuarioService {
         usuarioRepository.delete(usuario);
     }
 
-    public Usuario login(LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
+    public LoginResponse login(LoginRequest request) {
 
-        if (!usuario.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Credenciales inválidas");
-        }
+    Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new RuntimeException("Credenciales inválidas"));
 
-        return usuario;
+    if (!usuario.getPassword().equals(request.getPassword())) {
+        throw new RuntimeException("Credenciales inválidas");
     }
+
+    String token = jwtService.generateToken(usuario);
+
+    return new LoginResponse(
+            token,
+            usuario.getRol().getNombreRol()
+    );
+}
+    
 }
