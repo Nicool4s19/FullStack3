@@ -14,7 +14,10 @@ import cl.duoc.bernardo_ohiggins.gestion_usuarios_service.models.responses.Login
 
 @RestController
 @RequestMapping("/api/usuarios")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://full-stack3-front.vercel.app"
+})
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
