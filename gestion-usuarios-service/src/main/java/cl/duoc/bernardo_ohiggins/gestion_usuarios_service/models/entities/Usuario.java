@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
@@ -40,9 +41,10 @@ public class Usuario {
     private String email;
 
     private String telefono;
-
+    
     @NotBlank
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private Boolean activo = true;
