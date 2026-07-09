@@ -1,84 +1,84 @@
 package cl.duoc.bernardo_ohiggins.gestion_usuarios_service.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
 
+    private final JwtFilter jwtFilter;
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http
-            .csrf(csrf -> csrf.disable())
-
-            .cors(cors -> {})
-
-            .authorizeHttpRequests(auth -> auth
-
-                .requestMatchers(
-                    "/api/usuarios/login",
-                    "/api/usuarios"
-                ).permitAll()
-
-                .anyRequest().permitAll()
-            );
-
-
-        return http.build();
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
     }
 
-
-
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http) throws Exception {
 
-        CorsConfiguration config = new CorsConfiguration();
+        return http
 
-        config.setAllowedOrigins(
-            List.of(
-                "https://full-stack3-front.vercel.app"
-            )
-        );
+                .csrf(csrf -> csrf.disable())
 
+                .cors(Customizer.withDefaults())
 
-        config.setAllowedMethods(
-            List.of(
-                "GET",
-                "POST",
-                "PUT",
-                "DELETE",
-                "OPTIONS"
-            )
-        );
+                .sessionManagement(session -> session.sessionCreationPolicy(
+                        SessionCreationPolicy.STATELESS))
 
+                .formLogin(form -> form.disable())
 
-        config.setAllowedHeaders(
-            List.of("*")
-        );
+                .httpBasic(basic -> basic.disable())
 
+                .exceptionHandling(exceptions -> exceptions
 
-        config.setAllowCredentials(true);
+                        .authenticationEntryPoint(
+                                (request, response, exception) -> response.sendError(
+                                        HttpServletResponse.SC_UNAUTHORIZED,
+                                        "Token ausente, inválido o vencido"))
 
+                        .accessDeniedHandler(
+                                (request, response, exception) -> response.sendError(
+                                        HttpServletResponse.SC_FORBIDDEN,
+                                        "No tienes permisos para realizar esta acción")))
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+                .authorizeHttpRequests(authorize -> authorize
 
+                        .requestMatchers(
+                                HttpMethod.OPTIONS,
+                                "/**")
+                        .permitAll()
 
-        source.registerCorsConfiguration(
-            "/**",
-            config
-        );
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/usuarios/login")
+                        .permitAll()
 
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/error")
+                        .permitAll()
 
-        return source;
+                        .requestMatchers(
+                                "/api/usuarios/**",
+                                "/api/roles/**")
+                        .hasRole("ADMIN")
+
+                        .anyRequest()
+                        .authenticated())
+
+                .addFilterBefore(
+                        jwtFilter,
+                        UsernamePasswordAuthenticationFilter.class)
+
+                .build();
     }
 }
